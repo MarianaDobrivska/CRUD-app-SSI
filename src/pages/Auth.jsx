@@ -28,7 +28,7 @@ export default function Auth() {
   });
   const isSignupPage = pathname === "/signup";
 
-  const handleSignIn = ({ email, password }) => {
+  const handleSignIn = ({ email, password }, resetForm) => {
     const user = JSON.parse(localStorage.getItem(LS_KEY_USER));
     if (!user) {
       setErrors((prevState) => ({
@@ -39,6 +39,7 @@ export default function Auth() {
     }
 
     if (user.email === email && user.password === password) {
+      resetForm();
       navigate("/list");
       localStorage.setItem(LS_KEY_LOGIN, JSON.stringify(true));
     } else {
@@ -52,7 +53,7 @@ export default function Auth() {
     }
   };
 
-  const handleSignUp = (user) => {
+  const handleSignUp = (user, resetForm) => {
     const emailValidation = validateEmail(user.email);
     const passwordValidation = emailValidation.status
       ? { status: false, text: "" }
@@ -67,23 +68,24 @@ export default function Auth() {
     } else {
       localStorage.setItem(LS_KEY_USER, JSON.stringify(user));
       localStorage.setItem(LS_KEY_LOGIN, JSON.stringify(true));
+      resetForm();
       navigate("/list");
     }
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
+    const resetForm = () => event.target.reset();
+
     const data = new FormData(event.currentTarget);
     const email = data.get("email").trim();
     const password = data.get("password").trim();
 
     if (isSignupPage) {
-      handleSignUp({ email, password });
+      handleSignUp({ email, password }, resetForm);
     } else {
-      handleSignIn({ email, password });
+      handleSignIn({ email, password }, resetForm);
     }
-
-    event.target.reset();
   };
 
   const switchToSignUp = () => {
@@ -168,13 +170,11 @@ export default function Auth() {
                 {isSignupPage ? "Sign up" : "Sign in"}
               </Button>
               <Grid container>
-                <Grid item>
-                  <Link href="#" variant="body2" onClick={switchToSignUp}>
-                    {isSignupPage
-                      ? "Already have an account? Sign in"
-                      : "Don't have an account? Sign Up"}
-                  </Link>
-                </Grid>
+                <Link href="#" variant="body2" onClick={switchToSignUp}>
+                  {isSignupPage
+                    ? "Already have an account? Sign in"
+                    : "Don't have an account? Sign Up"}
+                </Link>
               </Grid>
             </Box>
           </Box>
